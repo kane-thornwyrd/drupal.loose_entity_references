@@ -1,0 +1,8 @@
+name = Loose Entity References
+description = ''
+core = 7.x
+package = Fields
+php = 5.3
+version = 1.x-dev
+;files[] =
+;configure =
