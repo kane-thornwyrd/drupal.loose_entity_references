@@ -1,1 +1,99 @@
 <?php
+
+/**
+ * Implements hook_schema().
+ */
+function loose_entity_references_schema() {
+  $schema = array();
+
+  $base_schema_structure = array(
+    'description'  => NULL,
+    'fields'       => NULL,
+    'primary key'  => NULL,
+    'unique keys'  => NULL,
+    'foreign keys' => NULL,
+    'indexes'      => NULL,
+  );
+
+  $schema['loose_entity_references_targets'] = array_merge(
+  $base_schema_structure,
+  array(
+    'description' => 'Allow to quick lookup if a bundle is targeted.',
+    'primary key' => array('entity_type', 'bundle', 'field_name'),
+  ));
+  $schema['loose_entity_references_targets']['fields'] = array(
+    'entity_type' => array(
+      'type'     => 'varchar',
+      'length'   => 255,
+      'not null' => TRUE,
+    ),
+    'bundle'   => array(
+      'type'       => 'varchar',
+      'length'     => 255,
+      'not null'   => TRUE,
+    ),
+    'field_name' => array(
+      'type'     => 'varchar',
+      'length'   => 255,
+      'not null' => TRUE,
+    ),
+    'display'  => array(
+      'type'     => 'varchar',
+      'length'   => 255,
+      'not null' => TRUE,
+    ),
+  );
+
+
+  $schema['loose_entity_references_register'] = array_merge(
+  $base_schema_structure,
+  array(
+    'description' => 'The register to quick access all targeted entities.',
+    'primary key' => array('entity_type', 'bundle', 'field_name', 'field_value'),
+  ));
+
+  $schema['loose_entity_references_register']['fields'] = array(
+    'duid' => array(
+      'type'        => 'int',
+      'unsigned'    => TRUE,
+      'not null'    => FALSE
+    ),
+    'entity_type' => array(
+      'type'     => 'varchar',
+      'length'   => 255,
+      'not null' => TRUE,
+    ),
+    'bundle'   => array(
+      'type'       => 'varchar',
+      'length'     => 255,
+      'not null'   => TRUE,
+    ),
+    'field_name' => array(
+      'type'        => 'varchar',
+      'length'      => 255,
+      'not null'    => TRUE,
+    ),
+    'field_value' => array(
+      'type'     => 'varchar',
+      'length'   => 255,
+      'not null' => TRUE,
+    ),
+  );
+
+  return $schema;
+
+}
+
+/**
+ * Implements hook_install().
+ */
+function loose_entity_references_install() {
+
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function loose_entity_references_uninstall() {
+
+}

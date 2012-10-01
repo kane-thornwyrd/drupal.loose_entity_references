@@ -1,0 +1,2 @@
+14:57:02: /home/jean-cedric/drupal_7/sites/all/modules/custom/loose_entity_references/translations/fr.po:8: invalid nplurals value
+14:57:02: msgfmt: found 2 fatal errors

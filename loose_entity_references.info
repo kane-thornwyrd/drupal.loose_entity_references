@@ -1,8 +1,7 @@
 name = Loose Entity References
-description = ''
+description = Create a reference to an entity using the hypothetical value of one of its fields
 core = 7.x
 package = Fields
 php = 5.3
 version = 1.x-dev
-;files[] =
 ;configure =

@@ -1,0 +1,31 @@
+# $Id$
+#
+# LANGUAGE translation of Drupal (general)
+# Copyright 2012 Jean-cédric Thérond <jean.cedric.t@gmail.com>
+# Generated from file: loose_entity_references.info: n/a
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Loose Entity References 1.x-dev\n"
+"POT-Creation-Date: 2012-09-28 14:39+0200\n"
+"PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
+"Last-Translator: NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: loose_entity_references.info:0
+msgid "Loose Entity References"
+msgstr ""
+
+#: loose_entity_references.info:0
+msgid "Create a reference to an entity using the hypothetical value of one of its fields"
+msgstr ""
+
+#: loose_entity_references.info:0
+msgid "Fields"
+msgstr ""
+

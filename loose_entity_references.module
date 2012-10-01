@@ -1,1 +1,57 @@
 <?php
+/**
+ * @file
+ *  Main file for this module. contain all the hook implementations.
+ */
+/**
+ * Register my special autoload that handle MY namespaces for THIS module only,
+ * to avoid undesired side-effects.
+ */
+spl_autoload_register(function ($class) {
+  $class = explode('\\', $class);
+  if ($class[0] == 'kanethornwyrd' && $class[1] == 'loose_entity_references') {
+    $filepath = __DIR__ . '/classes/' . implode('/', array_slice($class, 2)) . '.php';
+    if (file_exists($filepath)) {
+      require_once $filepath;
+    }
+  }
+}, TRUE, TRUE);
+
+/**
+ * Implements hook_entity_load().
+ *
+ * Cheap workaround to have the entity type and the bundle name inside the
+ * entity.
+ */
+function loose_entity_references_entity_load($entities, $type) {
+  foreach ($entities as $id => $entity) {
+    if (empty($entity->entity_type)) {
+      $entities[$id]->entity_type = $type;
+    }
+    if (!empty($entity->entity_type) && empty($entity->bundle)) {
+      list($id, $vid, $bundle) = entity_extract_ids($entity->entity_type,
+      $entity);
+      $entities[$id]->bundle = $bundle;
+    }
+  }
+
+}
+
+/**
+ * Implements hook_menu().
+ */
+function loose_entity_references_menu() {
+  $items = array();
+//
+//  $items['menu_item_location'] = array(
+//    'title'          => 'menu_item_title',
+//    'description'    => 'menu_item_description',
+//    'page callback'  => 'menu_item_callback',
+//    'page arguments' => array('menu_item_arguments'),
+//    'access arguments' => array('menu_item_access'),
+//    'type' => menu_item_type,
+//  );
+
+  return $items;
+
+}
