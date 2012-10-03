@@ -21,13 +21,15 @@ class DataGateway extends Database {
 
   const
   TARGETS_TABLE_NAME = 'loose_entity_references_targets',
-  REGISTER_TABLE_NAME = 'loose_entity_references_register'
+  REGISTRY_TABLE_NAME = 'loose_entity_references_registry'
 
   ;
 
   /**
    * Get the informations about the targeting of an Entity.
    *
+   * @param string $dbtable
+   *   The table to lookup for targeting informations.
    * @param mixed|NULL $entity
    *   The entity for which query.
    * @param array $options
@@ -36,7 +38,7 @@ class DataGateway extends Database {
    * @return array
    *   the targeting informations concerning this entity or all targets.
    */
-  public static function getTargetingInformations($entity = NULL, array $options = array()) {
+  public static function getTargetingInformations($dbtable = self::TARGETS_TABLE_NAME, $entity = NULL, array $options = array()) {
     $targeting_informations = &drupal_static(__FUNCTION__);
     if (!isset($targeting_informations)) {
       $cache = cache_get('loose_entity_references:targets');
@@ -50,7 +52,7 @@ class DataGateway extends Database {
         }
 
         $query = self::getConnection($options['target'])
-        ->select(self::TARGETS_TABLE_NAME, 'targets', $options)
+        ->select($dbtable, 'targets', $options)
         ->fields('targets');
         $results = $query->execute()->fetchAll();
 
@@ -73,7 +75,7 @@ class DataGateway extends Database {
   }
 
   /**
-   * Determine if an Entity is a valid target by the Register.
+   * Determine if an Entity is a valid target for the Registry.
    *
    * @param mixed $entity
    *   The entity to test.
@@ -93,14 +95,34 @@ class DataGateway extends Database {
       }
     }
     return FALSE;
+
   }
 
   /**
-   * Central function of this module. Gather the referenced entity
+   * Gather the referenced entity/ies from the Registry
    *
    * @param type $param
    */
-  public static function getReferencedEntity($param) {
+  public static function getMatchingEntities($entity_type, $bundle, $field_name, $field_value, array $options = array()) {
+
+    if (empty($options['target'])) {
+      $options['target'] = 'default';
+    }
+
+    $query = self::getConnection($options['target'])
+    ->select(self::REGISTRY_TABLE_NAME, 'registry', $options)
+    ->fields('registry')
+    ->condition('entity_type', $entity_type)
+    ->condition('bundle', $bundle)
+    ->condition('field_value', $field_value);
+
+    $results = $query->execute()->fetchAll();
+    $duids = array();
+    foreach ($results as $key => $result) {
+      $duids[$result->duid] = $result->duid;
+    }
+    $results = entity_load($entity_type, $duids);
+    return $results;
 
   }
 }

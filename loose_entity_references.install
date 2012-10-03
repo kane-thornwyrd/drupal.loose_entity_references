@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ *   The .install, nothing fancy.
+ */
 
 /**
  * Implements hook_schema().
@@ -45,18 +49,18 @@ function loose_entity_references_schema() {
   );
 
 
-  $schema['loose_entity_references_register'] = array_merge(
+  $schema['loose_entity_references_registry'] = array_merge(
   $base_schema_structure,
   array(
-    'description' => 'The register to quick access all targeted entities.',
-    'primary key' => array('entity_type', 'bundle', 'field_name', 'field_value'),
+    'description' => 'The registry to quick access all targeted entities.',
+    'primary key' => array('duid', 'entity_type', 'bundle', 'field_name'),
   ));
 
-  $schema['loose_entity_references_register']['fields'] = array(
+  $schema['loose_entity_references_registry']['fields'] = array(
     'duid' => array(
       'type'        => 'int',
       'unsigned'    => TRUE,
-      'not null'    => FALSE
+      'not null'    => TRUE
     ),
     'entity_type' => array(
       'type'     => 'varchar',
@@ -115,6 +119,11 @@ function loose_entity_references_field_schema($field) {
       'not null'   => TRUE,
     ),
     'field_name' => array(
+      'type'     => 'varchar',
+      'length'   => 255,
+      'not null' => TRUE,
+    ),
+    'display'  => array(
       'type'        => 'varchar',
       'length'      => 255,
       'not null'    => TRUE,

@@ -37,11 +37,13 @@ function loose_entity_references_entity_load($entities, $type) {
 
 }
 define('LOOSE_ENTITY_REFERENCES_CRUCIAL_FIELDS',
+serialize(
 array(
   'entity_type',
   'bundle',
   'field_name',
-));
+  'display',
+)));
 
 
 /**
@@ -69,11 +71,12 @@ function loose_entity_references_field_info() {
 function loose_entity_references_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
   foreach ($items as $delta => $item) {
     if (!loose_entity_references_field_is_empty($item, $field)) {
-      foreach (LOOSE_ENTITY_REFERENCES_CRUCIAL_FIELDS as $data_field) {
+      foreach (unserialize(LOOSE_ENTITY_REFERENCES_CRUCIAL_FIELDS) as $data_field) {
         if (!preg_match('@^(\w|\d|-|_)+$@', $item[$data_field])) {
           $errors[$field['field_name']][$langcode][$delta][] = array(
             'error'   => 'field_loose_entity_references_invalid',
-            'message' => t('Loose Reference to entities can\'t be achieved with non alpha-numeric datas.'),
+            'message' => t('Loose Reference to entities can\'t be achieved with non alpha-numeric datas. Seek the @field field value for the error',
+            array('@field' => $field['field_name'])),
           );
         }
       }
@@ -86,7 +89,7 @@ function loose_entity_references_field_validate($entity_type, $entity, $field, $
  * Implements hook_field_is_empty().
  */
 function loose_entity_references_field_is_empty($item, $field) {
-  foreach (LOOSE_ENTITY_REFERENCES_CRUCIAL_FIELDS as $data_field) {
+  foreach (unserialize(LOOSE_ENTITY_REFERENCES_CRUCIAL_FIELDS) as $data_field) {
     if (empty($item[$data_field])) {
       return TRUE;
     }
@@ -128,8 +131,8 @@ function loose_entity_references_field_formatter_view($entity_type, $entity, $fi
   switch ($display['type']) {
     case 'loose_entity_reference_default':
       foreach ($items as $delta => $item) {
-        $element[$delta] = entity_view($item['entity_type'], $entities, $view_mode,
-        $langcode, $page);
+        $element[$delta] = entity_view($item['entity_type'], $entities,
+        $item['display'], NULL, FALSE);
 //        $element[$delta] = array(
 //          '#type'       => 'html_tag',
 //          '#tag'        => 'p',
@@ -183,6 +186,8 @@ function loose_entity_references_field_widget_settings_form($field, $instance) {
   if (!isset($form)) {
     $widget = $instance['widget'];
     $settings = $widget['settings'];
+
+    dpm($settings);
     $form = array();
 
     $form['target'] = array(
@@ -191,16 +196,21 @@ function loose_entity_references_field_widget_settings_form($field, $instance) {
       '#suffix' => '</div>',
     );
 
-    $form['targeted_field'] = array(
+    if(!isset($form['target']['#element_validate']) || !is_array($form['target']['#element_validate'])){
+      $form['target']['#element_validate'] = array();
+    }
+    $form['target']['#element_validate'][] = 'loose_entity_references_field_widget_settings_form_validate';
+
+    $form['target']['targeted_field'] = array(
     );
-    $form['entity_selected_display'] = array(
+    $form['target']['entity_selected_display'] = array(
     );
 
     $entity_info = entity_get_info();
     foreach ($entity_info as $entity_type_machinename => $entity_type) {
       $form['target'][$entity_type_machinename] = array(
-        '#type'   => 'fieldset',
-        '#title'  => t($entity_type['label']),
+        '#type'  => 'fieldset',
+        '#title' => t('@label', array('@label'  => $entity_type['label'])),
         'bundles' => array(
           '#type' => 'vertical_tabs',
         ),
@@ -216,11 +226,12 @@ function loose_entity_references_field_widget_settings_form($field, $instance) {
         foreach ($fields_info as $field_mn => $value) {
           $fields_radios[$field_mn] = array(
             '#type'    => 'radio',
-            '#parents' => array('targeted_field'),
-            '#title'         => t($value['label']),
+            '#parents' => array('target','targeted_field'),
+            '#title' => t('@label', array('@label'         => $value['label'])),
             '#return_value'  => "{$entity_type_machinename}[{$bundle_machinename}][{$field_mn}]",
             '#required'      => TRUE,
           );
+//            dpm("{$entity_type_machinename}[{$bundle_machinename}][{$field_mn}]");
         }
         $displays_radios = array(
           '#type'   => 'fieldset',
@@ -231,8 +242,8 @@ function loose_entity_references_field_widget_settings_form($field, $instance) {
         foreach ($displays as $display_mn => $value) {
           $displays_radios[$display_mn] = array(
             '#type'    => 'radio',
-            '#parents' => array('entity_selected_display'),
-            '#title'        => $display_mn,
+            '#parents' => array('target','entity_selected_display'),
+            '#title'        => t('@display_mn', array('@display_mn' => $display_mn)),
             '#return_value' => $display_mn,
             '#required'     => TRUE,
           );
@@ -241,10 +252,16 @@ function loose_entity_references_field_widget_settings_form($field, $instance) {
 
         $form['target'][$entity_type_machinename]['bundles'][$bundle_machinename] = array(
           '#type'           => 'fieldset',
-          '#title'          => $bundle['label'],
+          '#title'          => t('@label', array('@label' => $bundle['label'])),
           'fields_radios'   => $fields_radios,
           'displays_radios' => $displays_radios,
         );
+        if(isset($settings['target'][$entity_type_machinename])){
+//          dpm($entity_type_machinename, 'entity OK');
+          if(isset($settings['target'][$entity_type_machinename]['bundles'][$bundle_machinename])){
+//            dpm($bundle_machinename, 'bundle OK');
+          }
+        }
       }
     }
   }
@@ -252,6 +269,12 @@ function loose_entity_references_field_widget_settings_form($field, $instance) {
   return $form;
 
 }
+
+function loose_entity_references_field_widget_settings_form_validate($element, &$form_state, $form){
+  dpm(func_get_args());
+}
+
+
 
 /**
  * Implements hook_form_alter().
@@ -274,22 +297,14 @@ function loose_entity_references_form_field_ui_field_edit_form_alter(&$form, &$f
 /**
  * Implements hook_field_settings_form().
  */
-function loose_entity_references_field_settings_form($field, $instance, $has_data) {
-  $form = array();
-  $settings = $field['settings'];
-
-  if ($field['type'] == 'loose_entity_reference') {
-
-  }
-
-  return $form;
-
-}
-
-/**
- * Implements hook_field_widget_form();
- */
-function loose_entity_references_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  dpm(func_get_args());
-
-}
+//function loose_entity_references_field_settings_form($field, $instance, $has_data) {
+//  $form = array();
+//  $settings = $field['settings'];
+//
+//  if ($field['type'] == 'loose_entity_reference') {
+//
+//  }
+//
+//  return $form;
+//
+//}
