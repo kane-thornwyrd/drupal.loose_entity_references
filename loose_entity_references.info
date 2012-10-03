@@ -4,4 +4,6 @@ core = 7.x
 package = Fields
 php = 5.3
 version = 1.x-dev
+dependencies[] = entity
 ;configure =
+scripts[] = 'loose_entity_references.js'

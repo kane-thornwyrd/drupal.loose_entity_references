@@ -76,7 +76,7 @@ function loose_entity_references_schema() {
     'field_value' => array(
       'type'     => 'varchar',
       'length'   => 255,
-      'not null' => TRUE,
+      'not null' => FALSE,
     ),
   );
 
@@ -95,5 +95,46 @@ function loose_entity_references_install() {
  * Implements hook_uninstall().
  */
 function loose_entity_references_uninstall() {
+
+}
+
+/**
+ * Implements hook_field_schema();
+ */
+function loose_entity_references_field_schema($field) {
+
+  $columns = array(
+    'entity_type' => array(
+      'type'     => 'varchar',
+      'length'   => 255,
+      'not null' => TRUE,
+    ),
+    'bundle'   => array(
+      'type'       => 'varchar',
+      'length'     => 255,
+      'not null'   => TRUE,
+    ),
+    'field_name' => array(
+      'type'        => 'varchar',
+      'length'      => 255,
+      'not null'    => TRUE,
+    ),
+    'field_value' => array(
+      'type'     => 'varchar',
+      'length'   => 255,
+      'not null' => FALSE,
+    ),
+  );
+  $indexes = array(
+    'targeted_field' => array(
+      'entity_type',
+      'bundle',
+      'field_name'
+    ),
+  );
+  return array(
+    'columns' => $columns,
+    'indexes' => $indexes,
+  );
 
 }

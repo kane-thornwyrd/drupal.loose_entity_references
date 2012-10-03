@@ -93,6 +93,14 @@ class DataGateway extends Database {
       }
     }
     return FALSE;
+  }
+
+  /**
+   * Central function of this module. Gather the referenced entity
+   *
+   * @param type $param
+   */
+  public static function getReferencedEntity($param) {
 
   }
 }
