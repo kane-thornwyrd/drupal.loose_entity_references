@@ -2,30 +2,59 @@
 #
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
-# Generated from file: loose_entity_references.info: n/a
+# Generated from files:
+#  loose_entity_references.module: n/a
+#  loose_entity_references.info: n/a
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Loose Entity References 1.x-dev\n"
-"POT-Creation-Date: 2012-09-28 14:39+0200\n"
-"PO-Revision-Date: 2012-09-28 14:59+0100\n"
+"Project-Id-Version: PROJECT VERSION\n"
+"POT-Creation-Date: 2012-10-05 12:14+0200\n"
+"PO-Revision-Date: 2012-10-05 12:27+0100\n"
 "Last-Translator: Jean-cédric Thérond <jean.cedric.t@gmail.com>\n"
-"Language-Team: \n"
-"Language: \n"
+"Language-Team:  <jean.cedric.t@gmail.com>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Language: French\n"
 "X-Poedit-Country: FRANCE\n"
-"X-Poedit-SourceCharset: utf-8\n"
+
+#: loose_entity_references.module:62;189
+msgid "Loose Entity Reference"
+msgstr "Référence lâche d'entité"
+
+#: loose_entity_references.module:63
+msgid "This field store a value referencing one or multiple entities by the hypothetical value of one of their fields. Entities don't have to exist."
+msgstr "Ce champ contient une valeur référençant une ou plusieurs entités par la valeur hypothétique de l'un de leurs champs. Ces entités n'ont pas à exister. "
+
+#: loose_entity_references.module:112
+msgid "Default"
+msgstr "Défaut"
+
+#: loose_entity_references.module:116
+msgid "Raw Data"
+msgstr "Données Brutes"
+
+#: loose_entity_references.module:279
+msgid "Targeted Entity → Bundle → Field"
+msgstr "Entité cible → Bundle → Champ"
+
+#: loose_entity_references.module:285
+msgid "Targeted Entity → Bundle → Display"
+msgstr "Entité cible → Bundle → Mode d'affichage"
+
+#: loose_entity_references.module:367;388
+msgid "Retarget"
+msgstr "Re-cibler"
 
 #: loose_entity_references.info:0
 msgid "Loose Entity References"
-msgstr "Référence lâche à entité"
+msgstr "Références lâches d'entité"
 
 #: loose_entity_references.info:0
 msgid "Create a reference to an entity using the hypothetical value of one of its fields"
-msgstr "Créer une référence à une entité en utilisant la valeur hypothétique d'un de ses champs."
+msgstr "Créer une référence à une entité en utilisant la valeur hypothétique d'un de ses champs"
 
 #: loose_entity_references.info:0
 msgid "Fields"
