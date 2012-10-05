@@ -23,9 +23,14 @@ function loose_entity_references_schema() {
   $base_schema_structure,
   array(
     'description' => 'Allow to quick lookup if a bundle is targeted.',
-    'primary key' => array('entity_type', 'bundle', 'field_name'),
+    'primary key' => array('field_id'),
   ));
   $schema['loose_entity_references_targets']['fields'] = array(
+    'field_id' => array(
+      'type'        => 'int',
+      'size'        => 'medium',
+      'not null'    => TRUE,
+    ),
     'entity_type' => array(
       'type'     => 'varchar',
       'length'   => 255,
@@ -108,26 +113,26 @@ function loose_entity_references_uninstall() {
 function loose_entity_references_field_schema($field) {
 
   $columns = array(
-    'entity_type' => array(
-      'type'     => 'varchar',
-      'length'   => 255,
-      'not null' => TRUE,
-    ),
-    'bundle'   => array(
-      'type'       => 'varchar',
-      'length'     => 255,
-      'not null'   => TRUE,
-    ),
-    'field_name' => array(
-      'type'     => 'varchar',
-      'length'   => 255,
-      'not null' => TRUE,
-    ),
-    'display'  => array(
-      'type'        => 'varchar',
-      'length'      => 255,
-      'not null'    => TRUE,
-    ),
+//    'entity_type' => array(
+//      'type'     => 'varchar',
+//      'length'   => 255,
+//      'not null' => TRUE,
+//    ),
+//    'bundle'   => array(
+//      'type'       => 'varchar',
+//      'length'     => 255,
+//      'not null'   => TRUE,
+//    ),
+//    'field_name' => array(
+//      'type'     => 'varchar',
+//      'length'   => 255,
+//      'not null' => TRUE,
+//    ),
+//    'display'  => array(
+//      'type'        => 'varchar',
+//      'length'      => 255,
+//      'not null'    => TRUE,
+//    ),
     'field_value' => array(
       'type'     => 'varchar',
       'length'   => 255,
@@ -135,10 +140,8 @@ function loose_entity_references_field_schema($field) {
     ),
   );
   $indexes = array(
-    'targeted_field' => array(
-      'entity_type',
-      'bundle',
-      'field_name'
+    'targeted_value' => array(
+      'field_value'
     ),
   );
   return array(

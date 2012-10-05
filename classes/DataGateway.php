@@ -38,39 +38,49 @@ class DataGateway extends Database {
    * @return array
    *   the targeting informations concerning this entity or all targets.
    */
-  public static function getTargetingInformations($dbtable = self::TARGETS_TABLE_NAME, $entity = NULL, array $options = array()) {
-    $targeting_informations = &drupal_static(__FUNCTION__);
-    if (!isset($targeting_informations)) {
-      $cache = cache_get('loose_entity_references:targets');
-      if ($cache) {
-        $targeting_informations = $cache->data;
-      }
-      else {
+  public static function getTargetingInformations($entity = NULL, array $options = array()) {
+//    $targeting_informations = &drupal_static(__FUNCTION__);
+//    if (!isset($targeting_informations)) {
+//      $cache = cache_get('loose_entity_references:targets');
+//      if ($cache) {
+//        $targeting_informations = $cache->data;
+//      }
+//      else {
 
-        if (empty($options['target'])) {
-          $options['target'] = 'default';
-        }
-
-        $query = self::getConnection($options['target'])
-        ->select($dbtable, 'targets', $options)
-        ->fields('targets');
-        $results = $query->execute()->fetchAll();
-
-        $targeting_informations = array();
-        foreach ($results as $entry) {
-          $targeting_informations[$entry->entity_type][$entry->bundle][$entry->field_name] = $entry->display;
-        }
-        cache_set('loose_entity_references:targets', $targeting_informations,
-        'cache');
-      }
-
-      if ($entity === NULL) {
-        return $targeting_informations;
-      }
-      else {
-        return $targeting_informations[$entity->entity_type][$entity->bundle];
-      }
+    if (empty($options['target'])) {
+      $options['target'] = 'default';
     }
+
+    $query = self::getConnection($options['target'])
+    ->select(self::TARGETS_TABLE_NAME, 'targets', $options)
+    ->fields('targets');
+    $results = $query->execute()->fetchAll();
+
+//    dpm($results);
+    $targeting_informations = array();
+    foreach ($results as $entry) {
+      if (empty($targeting_informations[$entry->entity_type])) {
+        $targeting_informations[$entry->entity_type] = array();
+      }
+      if (empty($targeting_informations[$entry->entity_type][$entry->bundle])) {
+        $targeting_informations[$entry->entity_type][$entry->bundle] = array();
+      }
+      $targeting_informations[$entry->entity_type][$entry->bundle][$entry->field_name] = $entry->display;
+    }
+//        cache_set('loose_entity_references:targets', $targeting_informations,
+//        'cache');
+//      }
+
+
+    if ($entity === NULL) {
+      return $targeting_informations;
+    }
+    else {
+      return empty($targeting_informations[$entity->entity_type][$entity->bundle])
+      ? array()
+      : $targeting_informations[$entity->entity_type][$entity->bundle];
+    }
+//    }
 
   }
 
@@ -123,6 +133,105 @@ class DataGateway extends Database {
     }
     $results = entity_load($entity_type, $duids);
     return $results;
+
+  }
+
+  public static function insertEntityInRegistry($entity, array $options = array()) {
+
+    if (empty($options['target'])) {
+      $options['target'] = 'default';
+    }
+    list($id, $vid, $bundle) = entity_extract_ids($entity->entity_type, $entity);
+    $settings = self::getTargetingInformations($entity, $options);
+    foreach ($settings as $field_name => $display_mn) {
+      $fields_data = field_get_items($entity->entity_type, $entity, $field_name);
+      foreach ($fields_data as $value) {
+// duid 	entity_type 	bundle 	field_name field_value
+        $query = self::getConnection($options['target'])
+        ->merge(self::REGISTRY_TABLE_NAME, $options)
+        ->key(array(
+          'duid'        => $id,
+          'entity_type' => $entity->entity_type,
+          'bundle'      => $bundle,
+          'field_name'  => $field_name,
+        ))
+        ->fields(array(
+          'field_value' => $value
+        ))->execute();
+      }
+    }
+
+  }
+
+  public static function deleteEntityInRegistry($entity, array $options = array()) {
+
+    if (empty($options['target'])) {
+      $options['target'] = 'default';
+    }
+
+    list($id, $vid, $bundle) = entity_extract_ids($entity->entity_type, $entity);
+    $settings = self::getTargetingInformations($entity, $options);
+    foreach ($settings as $field_name => $display_mn) {
+      $query = self::getConnection($options['target'])
+      ->delete(self::REGISTRY_TABLE_NAME)
+      ->condition('duid', $id)
+      ->condition('entity_type', $entity->entity_type)
+      ->condition('bundle', $bundle)
+      ->execute();
+    }
+
+  }
+
+  public static function insertTargetingDatas($settings, array $options = array()) {
+
+    if (empty($options['target'])) {
+      $options['target'] = 'default';
+    }
+    foreach ($settings as $setting) {
+      $query = self::getConnection($options['target'])
+      ->merge(self::TARGETS_TABLE_NAME)
+      ->key(array('field_id' => $setting->field_id))
+      ->fields(array(
+        'entity_type' => $setting->entity_type,
+        'bundle'      => $setting->bundle,
+        'field_name'  => $setting->field,
+        'display'     => $setting->display
+      ))
+      ->execute();
+    }
+
+  }
+
+  public static function getLooseEntityReferenceFieldsSettings(array $options = array()) {
+
+    if (empty($options['target'])) {
+      $options['target'] = 'default';
+    }
+
+    $query = self::getConnection($options['target'])
+    ->select('field_config_instance', 'instance_confs');
+    $query->join('field_config', 'confs', 'confs.id = instance_confs.field_id');
+    $query->fields('instance_confs', array('id', 'data'))
+    ->condition('confs.type', 'loose_entity_reference')
+    ->condition('confs.active', TRUE)
+    ->condition('confs.deleted', FALSE)
+    ->condition('instance_confs.deleted', FALSE);
+
+    $results = $query->execute()->fetchAll();
+    $out = array();
+
+    foreach ($results as $res) {
+      $data = unserialize($res->data);
+      $instance_settings = $data['widget']['settings'];
+
+      $settings = ToolBox::targetStringToArrayExtractor($instance_settings['target']['entity_bundle_field'],
+      'settingArrayToClass');
+      $settings->display = $instance_settings['target']['entity_bundle_display'];
+      $settings->field_id = $res->id;
+      $out[] = $settings;
+    }
+
+    return $out;
 
   }
 }
